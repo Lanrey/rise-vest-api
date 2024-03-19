@@ -1,3 +1,4 @@
+
 import "reflect-metadata";
 import {
   BaseEntity,
@@ -26,13 +27,10 @@ export class User extends BaseEntity {
   @Index("IDX_users_email", { unique: true })
   email!: string;
 
-
   @OneToMany(() => Post, post => post.user)
-  @Index("post_foreign_key_user_index")
   posts?: Post[];
 
   @OneToMany(() => Comment, (comment: Comment) => comment.user)
-  @Index("comment_foreign_key_comment_index")
   comments!: Comment[];
 
   @CreateDateColumn({

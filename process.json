@@ -1,0 +1,11 @@
+{
+    "apps": [
+      {
+        "exec_mode": "cluster",
+        "instances": "max",
+        "name": "express-typescript-skeleton",
+        "script": "dist/index.js"
+      }
+    ]
+  }
+  
