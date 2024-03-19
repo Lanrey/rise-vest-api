@@ -6,7 +6,7 @@ services:
       context: .
       args:
         - PORT=${PORT}
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     image: ${IMAGE_NAME}:prod
     container_name: express-typescript-skeleton
     restart: always
@@ -14,7 +14,7 @@ services:
       - express-typescript-skeleton-postgres
       - express-typescript-skeleton-redis
     env_file:
-      - .env
+      - ./.env
     environment:
       - TZ=${TZ}
       - WAIT_HOSTS=express-typescript-skeleton-postgres:5432
