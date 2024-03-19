@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, BaseEntity, Index } from 'typeorm';
 import { Post } from './post.entity';
 import { User } from './user.entity';
 
@@ -14,6 +14,7 @@ export class Comment extends BaseEntity {
   @ManyToOne(() => User, user => user.comments)
   user!: User;
 
+  @Index('comment_text_index')
   @Column('text', { nullable: true })
   content?: string;
 

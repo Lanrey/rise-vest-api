@@ -42,6 +42,7 @@ EOF
 COPY --link . .
 
 RUN <<EOF
+npm run typeorm:migration:generate
 npm run typeorm:migration:run
 npm run build
 npm prune --omit=dev

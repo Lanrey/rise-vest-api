@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, OneToMany, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, OneToMany, BaseEntity, Index } from 'typeorm';
 import { User } from './user.entity';
 import { Comment } from './comment.entity';
 
@@ -11,6 +11,7 @@ export class Post extends BaseEntity {
   @Column({ length: 200, nullable: false })
   title!: string;
 
+  @Index('post_text_index')
   @Column('text', { nullable: true })
   content?: string;
 
