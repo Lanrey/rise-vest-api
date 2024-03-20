@@ -51,5 +51,5 @@ jobs:
 
     - name: Deploy to Elastic Beanstalk
       run: |
-        aws elasticbeanstalk create-application-version --application-name risevest --version-label ${{ github.sha }} --source-bundle S3Bucket=risevest-bucket,S3Key=${{ github.sha }}.zip
-        aws elasticbeanstalk update-environment --environment-name Risevest-env --version-label ${{ github.sha }}
+        aws elasticbeanstalk create-application-version --application-name risevest-api --version-label ${{ github.sha }} --source-bundle S3Bucket=risevest-bucket,S3Key=${{ github.sha }}.zip
+        aws elasticbeanstalk update-environment --environment-name Risevest-api-env --version-label ${{ github.sha }}
