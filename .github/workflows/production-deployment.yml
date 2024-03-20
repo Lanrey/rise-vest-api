@@ -11,6 +11,13 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
 
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -22,17 +29,27 @@ jobs:
         IMAGE_TAG=${{ github.sha }}
         docker build -t ${{ secrets.DOCKER_USERNAME }}/my-docker-repo:$IMAGE_TAG .
         docker push ${{ secrets.DOCKER_USERNAME }}/my-docker-repo:$IMAGE_TAG
+    - name: Prepare the Dockerrun.aws.json
+      run: |
+        echo '{
+          "AWSEBDockerrunVersion": "1",
+          "Image": {
+            "Name": "${{ secrets.DOCKER_USERNAME }}/my-docker-repo:${{ github.sha }}",
+            "Update": "true"
+          },
+          "Ports": [
+            {
+              "ContainerPort": "80"
+            }
+          ]
+        }' > Dockerrun.aws.json
+    - name: Zip deployment package
+      run: zip deployment-package.zip Dockerrun.aws.json
+    
+    - name: Upload deployment package to S3
+      run: aws s3 cp deploy.zip s3://risevest-bucket/${{ github.sha }}.zip
 
     - name: Deploy to Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v18
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        region: ${{ secrets.AWS_REGION }}
-        application_name: risevest
-        environment_name: Risevest-env
-        version_label: ${{ github.sha }}
-        version_description: "Deployed via GitHub Actions"
-        docker_image: "${{ secrets.DOCKER_USERNAME }}/my-docker-repo:$IMAGE_TAG"
-        docker_username: ${{ secrets.DOCKER_USERNAME }}
-        docker_password: ${{ secrets.DOCKER_PASSWORD}}
+      run: |
+        aws elasticbeanstalk create-application-version --application-name your-eb-application-name --version-label ${{ github.sha }} --source-bundle S3Bucket=my-eb-bucket,S3Key=${{ github.sha }}.zip
+        aws elasticbeanstalk update-environment --environment-name your-eb-environment-name --version-label ${{ github.sha }}
