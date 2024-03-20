@@ -7,4 +7,5 @@
 3. Navigate to /api/v1/health to check status
 
 # Host name, URL and Postman Docs
-1. 
+1. Host name: http://risevest-backend-api.us-east-1.elasticbeanstalk.com
+2: postman docs
