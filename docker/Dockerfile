@@ -1,71 +1,53 @@
-# syntax=docker/dockerfile:1.6-labs
+# Use a specific version of node as the base image
 ARG NODE_VERSION=20.11.1
-
+ARG WAIT_VERSION=2.12.1
 FROM node:${NODE_VERSION}-alpine as base
 
-LABEL maintainer="Olusola Akinsulere" 
-
-ARG WAIT_VERSION=2.12.0
-
-
-RUN <<EOF
-set -ex
-apk update
-apk upgrade
-apk add --no-cache openssl
-rm -rf /var/cache/apk/*
-EOF
-
-RUN <<EOF
-npm install -g pm2
-npm cache clean --force
-EOF
-
+# Set label and environment variables
+LABEL maintainer="Olusola Akinsulere"
 ENV NODE_ENV=production \
-  FORCE_COLOR=1
+    FORCE_COLOR=1
 
-#ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait /wait
-#RUN chmod +x /wait
-# Instead of ADD https://github.com/...
+# Install system dependencies and the wait utility
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache openssl && \
+    rm -rf /var/cache/apk/* && \
+    npm install -g pm2 && \
+    npm cache clean --force
+
+# Add the wait script
 COPY ./src/bin/wait /wait
+#ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait /wait
 RUN chmod +x /wait
 
-
+# Set the working directory
 WORKDIR /app
 
-
+# Use a second stage for building the application
 FROM base as builder
+COPY package*.json ./
+RUN npm install && \
+    npm cache clean --force
+COPY . .
+RUN npm run build 
 
-COPY --link package*.json ./
-
-RUN <<EOF
-npm install
-npm cache clean --force
-EOF
-
-COPY --link . .
-
-RUN <<EOF
-npm run build
-npm prune --omit=dev
-EOF
-
-
+# Use a third stage for the runtime
 FROM base as runtime
-
 ARG PORT=5000
 ENV PORT $PORT
 EXPOSE $PORT
+
+# Create a volume for logs
 VOLUME ["/app/logs"]
+#RUN mkdir =p logs
 
-RUN mkdir logs
+# Copy necessary files from the builder stage
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
 
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/dist /app
+# Uncomment if you need the process.json file
+# COPY --from=builder /app/process.json ./process.json
 
-# Copy the process.json file into the Docker image
-COPY process.json /app/process.json
-
-
-
-CMD /wait &&  npm run typeorm:migration:run && pm2-runtime ./process.json
+# Set the command to start the application
+CMD /wait && npm run typeorm:migration:run && npm start

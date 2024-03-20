@@ -16,6 +16,6 @@ app.set('env', process.env.NODE_ENV);
 
 app.use(methodOverride());
 
-app.use(routes);
+app.use('/api/v1', routes);
 
 export default app;

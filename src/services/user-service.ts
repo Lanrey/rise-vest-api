@@ -7,6 +7,11 @@ import {
 } from "../utils/errors/error-handlers";
 import handleGetRepository from "../utils/connection";
 
+interface PaginationOptions {
+    page: number; // Page number, starting from 1
+    pageSize: number; // Number of items per page
+  }
+
 export class UserService {
   constructor(private userRepository: Repository<User>) {}
   /**
@@ -36,9 +41,15 @@ export class UserService {
   /**
    * Retrieves all users in database
    */
-  async getAllUsers(): Promise<User[]> {
-    // TODO: consider pagination
-    const users = await this.userRepository.find();
+  async getAllUsers({page, pageSize}: PaginationOptions): Promise<User[]> {
+    
+    const skippedItems = (page - 1) * pageSize;
+
+
+    const users = await this.userRepository.find({
+        take: pageSize,
+        skip: skippedItems
+    });
     return users;
   }
 
