@@ -33,7 +33,7 @@ jobs:
       - name: Zip deployment package
         run: zip deployment-package.zip Dockerrun.aws.json
       - name: Upload deployment package to S3
-        run: >-
+        run: >
           aws s3 cp deployment-package.zip s3://risevest-bucket/${{ github.sha
           }}.zip
       - name: Deploy to Elastic Beanstalk
