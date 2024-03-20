@@ -28,8 +28,7 @@ jobs:
           }}/my-docker-repo:$IMAGE_TAG .
 
           docker push ${{ secrets.DOCKER_USERNAME }}/my-docker-repo:$IMAGE_TAG
-      - name: Use the Dockerrun.aws.json from the root folder
-        run: cp Dockerrun.aws.json Dockerrun.aws.json
+    
       - name: Zip deployment package
         run: zip deployment-package.zip Dockerrun.aws.json
       - name: Upload deployment package to S3
