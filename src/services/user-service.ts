@@ -81,30 +81,31 @@ export class UserService {
     return user;
   }
   async getTopUsersWithLatestComment(limit: string) {
-  const topUsersWithLatestComment = await this.userRepository.query(`WITH LatestComments AS (
+  const topUsersWithLatestComment = await this.userRepository.query(`
+  WITH LatestComments AS (
     SELECT
-        postId,
-        MAX(createdAt) AS LatestCreatedAt
-    FROM comments
-    GROUP BY postId
+        "postId",
+        MAX("Comments"."created_at") AS LatestCreatedAt
+    FROM "Comments"
+    GROUP BY "Comments"."postId"
 ),
 UserPostCounts AS (
     SELECT
-        userId,
-        COUNT(id) AS PostCount
-    FROM posts
-    GROUP BY userId
+        "userId",
+        COUNT("id") AS PostCount
+    FROM "Posts"
+    GROUP BY "Posts"."userId"
 )
 SELECT
-    u.id,
-    u.name,
-    p.title,
-    c.content
-FROM users u
-JOIN UserPostCounts upc ON u.id = upc.userId
-LEFT JOIN posts p ON u.id = p.userId
-LEFT JOIN LatestComments lc ON p.id = lc.postId
-LEFT JOIN comments c ON p.id = c.postId AND lc.LatestCreatedAt = c.createdAt
+    u."id",
+    u."name",
+    p."title",
+    c."content"
+FROM "Users" u
+JOIN UserPostCounts upc ON u."id" = upc."userId"
+LEFT JOIN "Posts" p ON u."id" = p."userId"
+LEFT JOIN LatestComments lc ON p."id" = lc."postId"
+LEFT JOIN "Comments" c ON p."id" = c."postId" AND lc.LatestCreatedAt = c."created_at"
 ORDER BY upc.PostCount DESC
 LIMIT $1;
 `
